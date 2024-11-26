@@ -60,7 +60,9 @@ export default function App() {
       {estadoJuego() ? (
         <>
           <Text style={styles.resultado}>{estadoJuego()}</Text>
-          <Button title="Reiniciar juego" onPress={reiniciarJuego} />
+          <Pressable style = {styles.boton} onPress={reiniciarJuego}>
+            <Text style = {styles.textoBoton} > Reiniciar juego </Text>
+          </Pressable>
         </>
       ) : (
         <>
