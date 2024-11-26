@@ -1,45 +1,81 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, StyleSheet, Button } from 'react-native';
+import { StyleSheet, Text, View, TextInput, Button, Alert, Pressable } from 'react-native';
+
+const palabras = ["EXPO", "JUEGO", "AHORCADO", "REACT", "NATIVO"]; // Palabras predefinidas
 
 export default function App() {
-  const [texto, setTexto] = useState(''); // Estado para manejar el texto ingresado
-  const [letraAlmacenada, setLetraAlmacenada] = useState(''); //Almacenar la letra
+  const [palabraSecreta, setPalabraSecreta] = useState(
+    palabras[Math.floor(Math.random() * palabras.length)]
+  );
+  const [letrasAdivinadas, setLetrasAdivinadas] = useState([]);
+  const [intentosRestantes, setIntentosRestantes] = useState(6);
+  const [letraInput, setLetraInput] = useState("");
 
-  // Función que restringe la entrada a una sola letra
-  const handleTextChange = (input) => {
-    // Verifica si el input tiene una longitud mayor a 1, si es así lo recorta a la primera letra
-    if (input.length <= 1) {
-      setTexto(input); // Solo actualiza el estado si el input tiene una o ninguna letra
+  const reiniciarJuego = () => {
+    setPalabraSecreta(palabras[Math.floor(Math.random() * palabras.length)]);
+    setLetrasAdivinadas([]);
+    setIntentosRestantes(6);
+    setLetraInput("");
+  };
+
+  const manejarInput = () => {
+    const letra = letraInput.toUpperCase();
+    setLetraInput("");
+
+    if (letrasAdivinadas.includes(letra)) {
+      Alert.alert("Ya intentaste esa letra.");
+      return;
+    }
+
+    setLetrasAdivinadas([...letrasAdivinadas, letra]);
+
+    if (!palabraSecreta.includes(letra)) {
+      setIntentosRestantes(intentosRestantes - 1);
     }
   };
 
-  const handleSubmit = () => {
+  const mostrarPalabra = () => {
+    return palabraSecreta
+      .split("")
+      .map((letra) => (letrasAdivinadas.includes(letra) ? letra : "_"))
+      .join(" ");
+  };
 
-    if (texto) {
-
-      setLetraAlmacenada(texto);
-      setTexto('');
-
+  const estadoJuego = () => {
+    if (intentosRestantes <= 0) {
+      return "PERDISTE";
     }
-
-  }
+    if (!mostrarPalabra().includes("_")) {
+      return "¡GANASTE!";
+    }
+    return null;
+  };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>La palabra es: {texto}</Text>  
-      {/*Aca poner la palabra a adivinar*/}
-      
-      <TextInput
-        style={styles.input}
-        placeholder="Escribe una letra..."
-        value={texto}
-        onChangeText={handleTextChange}  // Usamos la función que restringe la entrada
-        maxLength={1}  // Limita el máximo de caracteres a 1
-      />
+      <Text style={styles.titulo}>¡Ahorcado!</Text>
+      <Text style={styles.palabra}>{mostrarPalabra()}</Text>
+      <Text style={styles.intentos}>Intentos restantes: {intentosRestantes}</Text>
 
-      <Button title = "submit" onPress={handleSubmit}/>
-      
-      <Text style={styles.output}>Letra introducida: {letraAlmacenada}</Text>
+      {estadoJuego() ? (
+        <>
+          <Text style={styles.resultado}>{estadoJuego()}</Text>
+          <Button title="Reiniciar juego" onPress={reiniciarJuego} />
+        </>
+      ) : (
+        <>
+          <TextInput
+            style={styles.input}
+            placeholder="Ingresa una letra"
+            maxLength={1}
+            value={letraInput}
+            onChangeText={setLetraInput}
+          />
+          <Pressable style={styles.boton} onPress={manejarInput}>
+            <Text style={styles.textoBoton}>Probar letra</Text>
+          </Pressable>
+        </>
+      )}
     </View>
   );
 }
@@ -47,28 +83,72 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-    backgroundColor: '#f0f0f0',
+    backgroundColor: "#333",
+    color: "#CCC",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: 20
   },
-  title: {
+
+  titulo: {
+    fontSize: 24,
+    fontWeight: "bold",
+    color: "#DDD",
+    marginBottom: 20
+  },
+
+  palabra: {
+    fontSize: 32,
+    color: "#DDD",
+    letterSpacing: 4,
+    marginVertical: 20
+  },
+
+  intentos: {
     fontSize: 20,
-    marginBottom: 20,
-    color: '#333',
+    fontWeight: "bold",
+    color: "#CF0033",
+    marginBottom: 20
   },
+
   input: {
-    height: 40,
-    borderColor: '#ccc',
     borderWidth: 1,
-    width: '100%',
-    marginBottom: 20,
-    paddingLeft: 10,
-    fontSize: 16,
+    borderColor: "#AAA",
+    padding: 10,
+    marginVertical: 10,
+    width: "80%",
+    borderRadius: 15,
+    textAlign: "center",
+    backgroundColor: "#DDD"
   },
-  output: {
-    fontSize: 18,
-    color: '#333',
-    marginTop: 20,
+
+  probar: {
+
+    borderRadius: 15,
+    backgroundColor: "#FF00FF",
+
   },
+
+  resultado: {
+    fontSize: 24,
+    fontWeight: "bold",
+    marginVertical: 20,
+    color: "#DDD",
+  },
+
+  boton: {
+    backgroundColor: "#CF0033",
+    paddingVertical: 15,
+    paddingHorizontal: 25,
+    borderRadius: 15,
+    marginTop: 30,
+  },
+
+  textoBoton: {
+    color: "#DDD", 
+    fontSize: 20,
+    fontWeight: "bold",
+    textAlign: "center",
+  }
+
 });
